@@ -3,7 +3,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from sqlalchemy.orm import Session
 from app.config import settings
-from app.models import Watchlist, Article, Analysis
+from app.models import Watchlist, Article, Analysis, AnalystNote
 from app.services.firecrawl_service import firecrawl_service
 from app.services.memory_service import memory_service
 from app.services.memory_ingestion import company_memory_coordinator
@@ -29,7 +29,7 @@ class PipelineService:
            a) Scrape recent financial news using Firecrawl (parallel article scraping)
            b) Recall prior scoped company memory and notes from Memento
         3) Synthesize with Gemini using strict JSON schema
-        4) Store analysis and scraped articles in PostgreSQL
+        4) Store analysis and scraped articles in the application database
         5) Queue newly discovered events and summary for Memento ingestion
         6) Log detailed per-stage timing table
         """
@@ -95,7 +95,23 @@ class PipelineService:
         t_fc_scrape = fc_timing.get("scrape_duration_s", 0.0)
         t_fc_total = fc_timing.get("total_duration_s", 0.0)
 
-        # 3. Gemini: Generate Structured Analysis
+        # 3. Load latest 5 analyst notes directly from the DB for this watchlist (not from Memento recall)
+        note_records = (
+            db.query(AnalystNote)
+            .filter(AnalystNote.watchlist_id == watchlist.id)
+            .order_by(AnalystNote.created_at.desc(), AnalystNote.id.desc())
+            .limit(5)
+            .all()
+        )
+        analyst_notes = [n.note.strip() for n in note_records if n.note and n.note.strip()]
+
+        # Build memory_used: first analyst notes, then up to 6 recalled Memento items, up to 8 total
+        memory_used = memory_service.build_memory_used(
+            analyst_notes=analyst_notes,
+            recalled_memento_items=recalled_memory,
+        )
+
+        # 4. Gemini: Generate Structured Analysis
         logger.info(f"Generating structured intelligence with Gemini for '{watchlist.name}'...")
         t_gemini_start = time.perf_counter()
         try:
@@ -104,6 +120,7 @@ class PipelineService:
                 ticker=watchlist.ticker,
                 articles=scraped_articles,
                 recalled_memory=recalled_memory,
+                analyst_notes=analyst_notes,
             )
         except Exception as e:
             logger.error(f"Gemini analysis failed: {e}", exc_info=True)
@@ -111,7 +128,7 @@ class PipelineService:
         t_gemini = time.perf_counter() - t_gemini_start
         logger.info(f"Gemini synthesis completed in {t_gemini:.2f}s.")
 
-        # 4. Save to Postgres
+        # 5. Save to Application Database
         t_db_start = time.perf_counter()
         # In the sources list returned to the frontend, include ONLY pages actually used as articles
         sources = [{"title": a["title"], "url": a["url"]} for a in scraped_articles]
@@ -127,7 +144,7 @@ class PipelineService:
             what_changed=analysis_output.what_changed,
             recurring_themes=[th.model_dump() for th in analysis_output.recurring_themes],
             sources=sources,
-            memory_used=recalled_memory,
+            memory_used=memory_used,
         )
         db.add(analysis_record)
 
@@ -143,9 +160,9 @@ class PipelineService:
         db.commit()
         db.refresh(analysis_record)
         t_db = time.perf_counter() - t_db_start
-        logger.info(f"PostgreSQL database save completed in {t_db:.2f}s.")
+        logger.info(f"Application database save completed in {t_db:.2f}s.")
 
-        # 5. Queue Memento ingestion after the durable Postgres save.  The
+        # 5. Queue Memento ingestion after the durable application database save.  The
         # coordinator makes the task visible immediately, so a later recall
         # for this watchlist waits until the ingest has completed.
         def ingest_analysis() -> None:
@@ -189,9 +206,9 @@ class PipelineService:
             f"1. Firecrawl News Search           : {t_fc_search:6.2f} s\n"
             f"2. Parallel Article Scrapes        : {t_fc_scrape:6.2f} s ({len(scraped_articles)} articles)\n"
             f"   -> Total Firecrawl Time         : {t_fc_total:6.2f} s\n"
-            f"3. Memento Recall (concurrent)     : {t_recall:6.2f} s ({len(recalled_memory)} items)\n"
+            f"3. Memento Recall (concurrent)     : {t_recall:6.2f} s ({len(recalled_memory)} items, {len(analyst_notes)} notes)\n"
             f"4. Gemini Intelligence Synthesis   : {t_gemini:6.2f} s\n"
-            f"5. PostgreSQL Database Save        : {t_db:6.2f} s\n"
+            f"5. Application Database Save       : {t_db:6.2f} s\n"
             f"6. Memento Knowledge Ingestion     : queued in background\n"
             f"--------------------------------------------------------------------\n"
             f"TOTAL PIPELINE DURATION            : {t_pipeline_total:6.2f} s (Target: < 60s)\n"

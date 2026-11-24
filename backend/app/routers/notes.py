@@ -30,7 +30,7 @@ def get_analyst_notes(id: int, db: Session = Depends(get_db)):
 
 @router.post("/notes", response_model=NoteResponse, status_code=status.HTTP_201_CREATED)
 def create_analyst_note(payload: NoteCreate, db: Session = Depends(get_db)):
-    """Create a new analyst note: save in PostgreSQL AND ingest into Memento."""
+    """Create a new analyst note: save in the application database AND ingest into Memento."""
     company = db.query(Watchlist).filter(Watchlist.id == payload.watchlist_id).first()
     if not company:
         raise HTTPException(
@@ -45,7 +45,7 @@ def create_analyst_note(payload: NoteCreate, db: Session = Depends(get_db)):
             detail="Note cannot be empty.",
         )
 
-    # 1. Save in PostgreSQL
+    # 1. Save in the application database
     note_record = AnalystNote(watchlist_id=company.id, note=note_text)
     db.add(note_record)
     db.commit()

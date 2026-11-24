@@ -6,33 +6,24 @@ from unittest.mock import patch
 backend_dir = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(backend_dir))
 
-# Enforce isolated test database and test Memento DB
+# Enforce isolated SQLite application and Memento databases.
+test_app_db = backend_dir / "data" / "test_pipeline.db"
 test_memento_db = backend_dir / "data" / "test_pipeline_memento.db"
-os.environ["DATABASE_URL"] = os.getenv("TEST_DATABASE_URL", "postgresql://postgres@localhost:5432/finnews_test")
+os.environ["DATABASE_URL"] = f"sqlite:///{test_app_db}"
 os.environ["MEMENTO_DB_PATH"] = str(test_memento_db)
 
 from fastapi.testclient import TestClient
-import psycopg2
-from app.db import init_db
+from app.db import engine, init_db
 from app.main import app
 from app.schemas import GeminiAnalysisOutput, KeyEvent, RecurringTheme
 
 def cleanup():
-    # Remove test SQLite DB
-    for p in backend_dir.glob("data/test_pipeline_memento.db*"):
+    engine.dispose()
+    for p in backend_dir.glob("data/test_pipeline*.db*"):
         try:
             p.unlink()
         except OSError:
             pass
-    # Truncate test Postgres database
-    try:
-        conn = psycopg2.connect(os.environ["DATABASE_URL"])
-        conn.autocommit = True
-        cur = conn.cursor()
-        cur.execute("TRUNCATE watchlist, articles, analyses, analyst_notes RESTART IDENTITY CASCADE;")
-        conn.close()
-    except Exception as e:
-        print("Note: Postgres test DB cleanup:", e)
 
 def run_pipeline_test():
     cleanup()

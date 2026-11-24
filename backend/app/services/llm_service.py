@@ -18,6 +18,7 @@ class LLMService:
         ticker: str | None,
         articles: list[dict],
         recalled_memory: list[str],
+        analyst_notes: list[str] | None = None,
     ) -> GeminiAnalysisOutput:
         """Call Gemini to generate structured financial intelligence from news and memory.
 
@@ -35,6 +36,7 @@ class LLMService:
             ticker=ticker,
             articles=articles,
             recalled_memory=recalled_memory,
+            analyst_notes=analyst_notes,
         )
 
         config_kwargs = {

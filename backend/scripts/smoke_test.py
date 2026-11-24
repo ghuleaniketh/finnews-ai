@@ -2,7 +2,7 @@
 """Smoke test script for FinNews AI backend integrations.
 
 Tests:
-1. PostgreSQL connection
+1. SQLite application database connection
 2. Real Gemini embedding call using 'gemini-embedding-001' (vector length 384, L2 normalized)
 3. Gemini structured JSON call using GEMINI_MODEL
 4. Memento ingest & recall using gemini-embedding-001 and GEMINI_MODEL (verifies entities_created is non-empty)
@@ -27,20 +27,23 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(me
 logger = logging.getLogger("smoke_test")
 
 
-def test_postgres() -> bool:
-    """Test 1: Direct PostgreSQL connection using psycopg2."""
-    logger.info("--- Testing (1/5) PostgreSQL Connection ---")
+def test_sqlite() -> bool:
+    """Test 1: SQLite application database connection and foreign-key enforcement."""
+    logger.info("--- Testing (1/5) SQLite Connection ---")
     try:
-        import psycopg2
-        conn = psycopg2.connect(settings.DATABASE_URL)
-        cur = conn.cursor()
-        cur.execute("SELECT 1 AS check_val, current_database(), version();")
-        row = cur.fetchone()
-        conn.close()
-        logger.info(f"✓ PostgreSQL OK: database='{row[1]}', version='{row[2].split()[0]} {row[2].split()[1]}'")
+        os.makedirs(settings.BASE_DIR / "data", exist_ok=True)
+        from sqlalchemy import text
+        from app.db import engine
+
+        if engine.dialect.name != "sqlite":
+            raise AssertionError(f"Expected SQLite app database, got {engine.dialect.name}")
+        with engine.connect() as conn:
+            assert conn.execute(text("SELECT 1")).scalar() == 1
+            assert conn.execute(text("PRAGMA foreign_keys")).scalar() == 1
+        logger.info(f"✓ SQLite OK: database='{settings.DATABASE_URL}' with foreign keys enabled")
         return True
     except Exception as e:
-        logger.error(f"✗ PostgreSQL Failed: {e}")
+        logger.error(f"✗ SQLite Failed: {e}")
         raise
 
 
@@ -215,12 +218,12 @@ def test_firecrawl() -> bool:
 def main():
     logger.info("Starting FinNews AI Smoke Test...")
 
-    pg_ok = False
-    pg_err = None
+    sqlite_ok = False
+    sqlite_err = None
     try:
-        pg_ok = test_postgres()
+        sqlite_ok = test_sqlite()
     except Exception as e:
-        pg_err = str(e)
+        sqlite_err = str(e)
 
     embed_ok = False
     embed_err = None
@@ -253,14 +256,14 @@ def main():
 
     print("\n" + "="*60)
     print("SMOKE TEST SUMMARY")
-    print(f"PostgreSQL               : {'PASS' if pg_ok else f'FAIL: {pg_err}'}")
+    print(f"SQLite Application DB    : {'PASS' if sqlite_ok else f'FAIL: {sqlite_err}'}")
     print(f"Embedding (gemini-001)   : {'PASS' if embed_ok else f'FAIL: {embed_err}'}")
     print(f"Gemini LLM JSON          : {'PASS' if gemini_ok else f'FAIL: {gemini_err}'}")
     print(f"Memento Ingest & Recall  : {'PASS' if memento_ok else f'FAIL: {memento_err}'}")
     print(f"Firecrawl Search+Scrape  : {'PASS' if firecrawl_ok else f'FAIL: {firecrawl_err}'}")
     print("="*60 + "\n")
 
-    if not (pg_ok and embed_ok and gemini_ok and memento_ok and firecrawl_ok):
+    if not (sqlite_ok and embed_ok and gemini_ok and memento_ok and firecrawl_ok):
         sys.exit(1)
 
 

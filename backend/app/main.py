@@ -18,7 +18,10 @@ logger = logging.getLogger("finnews_main")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize Postgres tables on startup
+    # Ensure data directory exists on startup
+    import os
+    os.makedirs(settings.BASE_DIR / "data", exist_ok=True)
+    # Initialize database tables on startup
     logger.info("Initializing database tables...")
     init_db()
     logger.info("Database initialized successfully.")

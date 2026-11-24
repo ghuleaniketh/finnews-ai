@@ -8,10 +8,8 @@ load_dotenv(dotenv_path=env_file)
 
 
 def normalize_database_url(database_url: str | None) -> str:
-    """Validate and normalize a PostgreSQL URL for the installed psycopg2 driver."""
-    url = (database_url or "").strip()
-    if not url:
-        raise RuntimeError("DATABASE_URL is not set")
+    """Normalize optional PostgreSQL URLs while preserving SQLite URLs."""
+    url = (database_url or "sqlite:///./data/finnews.db").strip()
 
     if url.startswith("postgresql+psycopg2://"):
         return url
@@ -40,10 +38,15 @@ class Settings:
     MAX_ARTICLES: int = int(os.getenv("MAX_ARTICLES", "3"))
 
     def __init__(self):
-        self.DATABASE_URL = normalize_database_url(os.getenv("DATABASE_URL"))
+        self.DATABASE_URL = normalize_database_url(os.getenv("DATABASE_URL", "sqlite:///./data/finnews.db"))
 
-        # Render may start with an empty persistent-disk directory.
+        # A clean deployment may not have a data directory yet.
+        os.makedirs(self.BASE_DIR / "data", exist_ok=True)
         os.makedirs(Path(self.MEMENTO_DB_PATH).expanduser().parent, exist_ok=True)
+        if self.DATABASE_URL.startswith("sqlite:///"):
+            sqlite_file_path = self.DATABASE_URL.replace("sqlite:///", "", 1)
+            if sqlite_file_path and sqlite_file_path != ":memory:":
+                os.makedirs(Path(sqlite_file_path).expanduser().resolve().parent, exist_ok=True)
 
         # Ensure environment variables are synchronized for underlying libraries
         if self.GOOGLE_API_KEY and not os.environ.get("GOOGLE_API_KEY"):

@@ -178,16 +178,16 @@ def clean_recalled_items(
     raw_items: list[str],
     company_name: str,
     ticker: str | None = None,
-    max_items: int = 8,
+    max_items: int = 6,
 ) -> list[str]:
-    """Clean, post-filter by company/ticker, deduplicate, and cap memory items.
+    """Clean, post-filter by company/ticker, drop low-value items, rewrite company facts, and cap memory items.
 
-    - Drops structural lines ("Related Conversations", "Conversation (recorded: ...)", headers)
-    - Replaces internal newlines so each item is a clean single line
-    - Strictly keeps only items matching the target company or ticker
-    - Removes company/ticker headers, incomplete labels, and duplicate text
-    - Truncates each item to 200 characters
-    - Caps output at max_items (default 8)
+    - Drops low-value items: lines matching 'type = organization', 'ticker = ...',
+      and bare 'X relates to Y' lines with no content.
+    - Rewrites 'Company: key = value' into readable text, e.g. 'Market capitalization: Rs 13 trillion'.
+    - Drops structural lines and labels.
+    - Strictly keeps only items matching the target company or ticker.
+    - Caps output at max_items (default 6).
     """
     structural_keywords = {
         "related conversations",
@@ -207,11 +207,9 @@ def clean_recalled_items(
         # Strip markdown headers and bullets
         line = line.lstrip("#-*\u2022 ").strip()
         line = re.sub(r"^\[Company:\s*[^\]|]+(?:\s*\|\s*Ticker:\s*[^\]]+)?\]\s*", "", line, flags=re.IGNORECASE)
-        if not line or len(line) < 8:
+        if not line or len(line) < 4:
             continue
 
-        # Memento frequently emits labels such as "Key Events:" separately
-        # from their value.  They do not provide usable recall context.
         if line.endswith(":"):
             continue
 
@@ -219,9 +217,35 @@ def clean_recalled_items(
         if any(line_lower.startswith(k) or line_lower == k for k in structural_keywords):
             continue
 
-        # Post-filter: must mention company or ticker
-        if not matches_company(line, company_name, ticker):
+        # 1. Drop low-value items: lines matching "type = organization" or "ticker = ..."
+        if re.search(r"\btype\s*=\s*organization\b", line, re.IGNORECASE):
             continue
+        if re.search(r"\bticker\s*=", line, re.IGNORECASE):
+            continue
+
+        # 2. Drop bare "X relates to Y" lines with no content
+        if re.search(r"^[^:\n]+?\s+relates to\s+[^:\n]+?$", line, re.IGNORECASE):
+            continue
+
+        # 3. Rewrite "Company: key = value" into readable text, e.g. "Market capitalization: Rs 13 trillion"
+        m = re.match(r"^([^:]+):\s*([^=]+?)\s*=\s*(.+)$", line)
+        if m:
+            ent = m.group(1).strip()
+            key = m.group(2).strip()
+            val = m.group(3).strip()
+            if not matches_company(ent, company_name, ticker):
+                continue
+            if key.lower() == "type" and "organization" in val.lower():
+                continue
+            if "ticker" in key.lower():
+                continue
+            # Capitalize first letter of key: "market capitalization" -> "Market capitalization"
+            readable_key = key[:1].upper() + key[1:]
+            line = f"{readable_key}: {val}"
+        else:
+            # For general text lines, must match company or ticker
+            if not matches_company(line, company_name, ticker):
+                continue
 
         line = line[:200].rstrip()
         norm = line.lower()
@@ -234,6 +258,41 @@ def clean_recalled_items(
             break
 
     return cleaned
+
+
+def build_memory_used(
+    analyst_notes: list[str],
+    recalled_memento_items: list[str],
+    max_memento_items: int = 6,
+    max_total_items: int = 8,
+) -> list[str]:
+    """Build the final memory_used list:
+    - First the analyst notes, each formatted as 'Analyst note: <text>'
+    - Then up to 6 recalled Memento items
+    - Up to 8 items total
+    """
+    memory_used: list[str] = []
+
+    # 1. First the analyst notes, each as "Analyst note: <text>"
+    for note in analyst_notes:
+        clean_note = note.strip()
+        if not clean_note:
+            continue
+        if clean_note.lower().startswith("analyst note:"):
+            formatted = f"Analyst note: {clean_note[13:].strip()}"
+        else:
+            formatted = f"Analyst note: {clean_note}"
+        memory_used.append(formatted)
+        if len(memory_used) >= max_total_items:
+            return memory_used
+
+    # 2. Up to 6 recalled Memento items, up to 8 total
+    allowed_memento = max(0, min(max_memento_items, max_total_items - len(memory_used)))
+    if allowed_memento > 0:
+        for item in recalled_memento_items[:allowed_memento]:
+            memory_used.append(item)
+
+    return memory_used
 
 
 class MemoryService:
@@ -340,16 +399,30 @@ class MemoryService:
             return []
 
     def get_items_for_company(self, company_name: str, ticker: str | None = None) -> list[str]:
-        """Retrieve recalled memory items strictly scoped to a company and capped at 8 items."""
+        """Retrieve recalled memory items strictly scoped to a company and capped at 6 items."""
         query = f"{company_name} {ticker or ''} financial news facts notes events".strip()
         raw_items = self.recall(query=query)
         cleaned_items = clean_recalled_items(
             raw_items=raw_items,
             company_name=company_name,
             ticker=ticker,
-            max_items=8,
+            max_items=6,
         )
         return cleaned_items
+
+    def build_memory_used(
+        self,
+        analyst_notes: list[str],
+        recalled_memento_items: list[str],
+        max_memento_items: int = 6,
+        max_total_items: int = 8,
+    ) -> list[str]:
+        return build_memory_used(
+            analyst_notes=analyst_notes,
+            recalled_memento_items=recalled_memento_items,
+            max_memento_items=max_memento_items,
+            max_total_items=max_total_items,
+        )
 
 
 memory_service = MemoryService()
