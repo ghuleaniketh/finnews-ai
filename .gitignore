@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+node_modules/
+dist/
+backend/data/*.db
+backend/data/*.db-*
+*.log
+run*.json
+.DS_Store
