@@ -1,11 +1,14 @@
+import logging
+import time
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import declarative_base, sessionmaker
-from app.config import settings
+from app.config import normalize_database_url, settings
 
-# SQLAlchemy 2.x defaults postgresql:// to psycopg (v3). Ensure psycopg2 dialect is used.
-db_url = settings.DATABASE_URL
-if db_url.startswith("postgresql://"):
-    db_url = db_url.replace("postgresql://", "postgresql+psycopg2://", 1)
+logger = logging.getLogger("db")
+
+# Normalize immediately before engine construction so every caller uses psycopg2.
+db_url = normalize_database_url(settings.DATABASE_URL)
 
 engine = create_engine(
     db_url,
@@ -27,7 +30,18 @@ def get_db():
 
 
 def init_db():
-    """Create all database tables on startup."""
+    """Create all database tables, tolerating a cold-starting Postgres instance."""
     # Ensure all models are imported before creating tables
     import app.models  # noqa: F401
-    Base.metadata.create_all(bind=engine)
+
+    max_attempts = 5
+    for attempt in range(1, max_attempts + 1):
+        try:
+            logger.info("Initializing database tables (attempt %s/%s).", attempt, max_attempts)
+            Base.metadata.create_all(bind=engine)
+            return
+        except SQLAlchemyError:
+            logger.exception("Database initialization attempt %s/%s failed.", attempt, max_attempts)
+            if attempt == max_attempts:
+                raise
+            time.sleep(3)

@@ -7,9 +7,23 @@ env_file = BASE_DIR / ".env"
 load_dotenv(dotenv_path=env_file)
 
 
+def normalize_database_url(database_url: str | None) -> str:
+    """Validate and normalize a PostgreSQL URL for the installed psycopg2 driver."""
+    url = (database_url or "").strip()
+    if not url:
+        raise RuntimeError("DATABASE_URL is not set")
+
+    if url.startswith("postgresql+psycopg2://"):
+        return url
+    if url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql+psycopg2://", 1)
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+psycopg2://", 1)
+    return url
+
+
 class Settings:
     BASE_DIR: Path = BASE_DIR
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://postgres@localhost:5432/finnews")
     FIRECRAWL_API_KEY: str = os.getenv("FIRECRAWL_API_KEY", "")
     GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY", "")
     GEMINI_MODEL: str = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
@@ -26,6 +40,11 @@ class Settings:
     MAX_ARTICLES: int = int(os.getenv("MAX_ARTICLES", "3"))
 
     def __init__(self):
+        self.DATABASE_URL = normalize_database_url(os.getenv("DATABASE_URL"))
+
+        # Render may start with an empty persistent-disk directory.
+        os.makedirs(Path(self.MEMENTO_DB_PATH).expanduser().parent, exist_ok=True)
+
         # Ensure environment variables are synchronized for underlying libraries
         if self.GOOGLE_API_KEY and not os.environ.get("GOOGLE_API_KEY"):
             os.environ["GOOGLE_API_KEY"] = self.GOOGLE_API_KEY
