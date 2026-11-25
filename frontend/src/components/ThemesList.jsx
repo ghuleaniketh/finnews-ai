@@ -1,5 +1,5 @@
 import React from 'react';
-import { Repeat } from 'lucide-react';
+import Icon from './Icon';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 /**
@@ -11,11 +11,11 @@ export default function ThemesList({ themes = [] }) {
   }
 
   return (
-    <Card className="bg-white border border-border shadow-xs">
+    <Card className="bg-card border-border shadow-xs">
       <CardHeader className="p-4 sm:p-5 pb-2">
         <div className="flex items-center gap-2">
-          <Repeat className="h-4 w-4 text-slate-700" />
-          <CardTitle className="text-sm font-semibold text-slate-900 tracking-tight">
+          <Icon name="repeat" size={16} className="text-foreground" />
+          <CardTitle className="text-sm font-semibold text-foreground tracking-tight">
             Recurring Themes ({themes.length})
           </CardTitle>
         </div>
@@ -26,16 +26,16 @@ export default function ThemesList({ themes = [] }) {
           {themes.map((item, idx) => (
             <div
               key={idx}
-              className="p-3 rounded-md bg-slate-50 border border-slate-200 space-y-1"
+              className="p-3 rounded-md bg-muted border border-border space-y-1"
             >
               <div className="flex items-center gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-blue-700 shrink-0" />
-                <span className="text-xs font-semibold text-slate-900 leading-snug">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#3B2F24] shrink-0" />
+                <span className="text-xs font-semibold text-foreground leading-snug">
                   {item.theme}
                 </span>
               </div>
               {item.note && (
-                <p className="text-xs text-slate-600 pl-3.5 leading-relaxed">
+                <p className="text-xs text-muted-foreground pl-3.5 leading-relaxed">
                   {item.note}
                 </p>
               )}

@@ -1,10 +1,11 @@
 import React from 'react';
-import { AlertCircle, X, RefreshCw } from 'lucide-react';
+import Icon from './Icon';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 
 /**
  * ErrorBanner: Clean minimal light notification for network or API errors.
+ * Soft red palette (#F5E0DB on #9B3B2E text).
  */
 export default function ErrorBanner({ error, onDismiss, onRetry }) {
   if (!error) return null;
@@ -12,10 +13,10 @@ export default function ErrorBanner({ error, onDismiss, onRetry }) {
   const errorMessage = typeof error === 'string' ? error : error?.message || 'An unexpected error occurred.';
 
   return (
-    <Alert className="mb-4 bg-rose-50 border-rose-200 text-rose-900 flex items-center justify-between p-3.5 shadow-xs">
+    <Alert className="mb-4 bg-[#F5E0DB] border-[#E8C6BE] text-[#9B3B2E] flex items-center justify-between p-3.5 shadow-xs">
       <div className="flex items-center gap-2.5 min-w-0 pr-2">
-        <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
-        <AlertDescription className="text-xs font-medium text-rose-800 truncate">
+        <Icon name="error" size={16} className="text-[#9B3B2E] shrink-0" />
+        <AlertDescription className="text-xs font-medium text-[#9B3B2E] truncate">
           {errorMessage}
         </AlertDescription>
       </div>
@@ -27,9 +28,9 @@ export default function ErrorBanner({ error, onDismiss, onRetry }) {
             variant="outline"
             size="sm"
             onClick={onRetry}
-            className="h-8 px-2.5 text-xs bg-white text-rose-800 border-rose-300 hover:bg-rose-100 hover:text-rose-900 min-h-[36px]"
+            className="h-8 px-2.5 text-xs bg-[#FFFDF8] text-[#9B3B2E] border-[#E8C6BE] hover:bg-[#F5E0DB] min-h-[36px]"
           >
-            <RefreshCw className="mr-1 h-3 w-3" />
+            <Icon name="refresh" size={13} className="mr-1" />
             Retry
           </Button>
         )}
@@ -40,9 +41,9 @@ export default function ErrorBanner({ error, onDismiss, onRetry }) {
             size="icon"
             onClick={onDismiss}
             aria-label="Dismiss error notice"
-            className="h-8 w-8 text-rose-600 hover:bg-rose-100 hover:text-rose-800 min-h-[36px] min-w-[36px]"
+            className="h-8 w-8 text-[#9B3B2E] hover:bg-[#F5E0DB] min-h-[36px] min-w-[36px]"
           >
-            <X className="h-4 w-4" />
+            <Icon name="close" size={16} />
           </Button>
         )}
       </div>

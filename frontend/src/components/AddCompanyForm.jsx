@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
+import Icon from './Icon';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { AlertCircle, Loader2, Plus } from 'lucide-react';
 
 /**
  * AddCompanyForm: Form to add a company/topic to watchlist with name and optional ticker.
- * Styled with shadcn/ui components for light minimal formal theme.
+ * Styled with warm cream palette tokens and Material Symbols.
  */
 export default function AddCompanyForm({ onAdd, onSuccess, onCancel }) {
   const [name, setName] = useState('');
@@ -42,15 +42,15 @@ export default function AddCompanyForm({ onAdd, onSuccess, onCancel }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-4 pt-1">
       {error && (
-        <div className="flex items-center gap-2 p-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-md">
-          <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+        <div className="flex items-center gap-2 p-3 text-xs text-[#9B3B2E] bg-[#F5E0DB] border border-[#E8C6BE] rounded-md">
+          <Icon name="error" size={16} className="shrink-0 text-[#9B3B2E]" />
           <span>{error}</span>
         </div>
       )}
 
       <div className="space-y-1.5">
-        <Label htmlFor="company-name" className="text-xs font-semibold uppercase tracking-wider text-slate-700">
-          Company or Topic <span className="text-rose-500">*</span>
+        <Label htmlFor="company-name" className="text-xs font-semibold uppercase tracking-wider text-foreground">
+          Company or Topic <span className="text-[#9B3B2E]">*</span>
         </Label>
         <Input
           id="company-name"
@@ -63,13 +63,13 @@ export default function AddCompanyForm({ onAdd, onSuccess, onCancel }) {
           }}
           disabled={submitting}
           autoFocus
-          className="h-10 text-sm bg-white"
+          className="h-10 text-sm bg-card border-border"
         />
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="company-ticker" className="text-xs font-semibold uppercase tracking-wider text-slate-700">
-          Ticker / Symbol <span className="text-slate-400 font-normal lowercase">(optional)</span>
+        <Label htmlFor="company-ticker" className="text-xs font-semibold uppercase tracking-wider text-foreground">
+          Ticker / Symbol <span className="text-muted-foreground font-normal lowercase">(optional)</span>
         </Label>
         <Input
           id="company-ticker"
@@ -78,7 +78,7 @@ export default function AddCompanyForm({ onAdd, onSuccess, onCancel }) {
           value={ticker}
           onChange={(e) => setTicker(e.target.value)}
           disabled={submitting}
-          className="h-10 text-sm font-mono uppercase placeholder:normal-case placeholder:font-sans bg-white"
+          className="h-10 text-sm font-mono uppercase placeholder:normal-case placeholder:font-sans bg-card border-border"
         />
       </div>
 
@@ -97,16 +97,16 @@ export default function AddCompanyForm({ onAdd, onSuccess, onCancel }) {
         <Button
           type="submit"
           disabled={!name.trim() || submitting}
-          className="h-10 min-w-[120px] bg-blue-700 hover:bg-blue-800 text-white font-medium"
+          className="h-10 min-w-[120px] bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
         >
           {submitting ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Icon name="progress_activity" size={16} className="animate-spin mr-1.5" />
               <span>Adding...</span>
             </>
           ) : (
             <>
-              <Plus className="mr-1.5 h-4 w-4" />
+              <Icon name="add" size={16} className="mr-1.5" />
               <span>Add to Watchlist</span>
             </>
           )}

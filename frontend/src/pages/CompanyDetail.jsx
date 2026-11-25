@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import {
-  ArrowLeft,
-  Loader2,
-  Sparkles,
-} from 'lucide-react';
+import Icon from '../components/Icon';
 import AnalyzeButton from '../components/AnalyzeButton';
 import SummaryCard, { RiskBadge } from '../components/SummaryCard';
 import SentimentBadge from '../components/SentimentBadge';
@@ -37,17 +33,7 @@ const ANALYSIS_STAGES = [
 
 /**
  * CompanyDetail: Deep-dive view for a specific company or topic.
- * Features:
- * - Header with company name, ticker, sentiment Badge, risk Badge, and Analyze button.
- * - Slim alert for rotating staged progress during analysis.
- * - Tabs for Analysis | History | Notes so the page isn't one long scroll on mobile.
- * - Content organized with Cards in exact order:
- *   1) Summary
- *   2) What changed (subtle left border, not a glow)
- *   3) Key events (ExternalLink icon)
- *   4) Recurring themes
- *   5) Memory used
- *   6) Sources
+ * Warm cream minimal formal theme with Material Symbols.
  */
 export default function CompanyDetail({ watchlist = [] }) {
   const { id } = useParams();
@@ -154,7 +140,7 @@ export default function CompanyDetail({ watchlist = [] }) {
 
   if (loading) {
     return (
-      <div className="py-12 bg-white rounded-lg border border-border">
+      <div className="py-12 bg-card rounded-lg border border-border">
         <Loader message={`Synthesizing intelligence dossier for ${company?.name || 'entity'}...`} />
       </div>
     );
@@ -168,9 +154,9 @@ export default function CompanyDetail({ watchlist = [] }) {
       <div>
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors min-h-[40px] py-1"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors min-h-[40px] py-1"
         >
-          <ArrowLeft className="h-3.5 w-3.5" />
+          <Icon name="arrow_back" size={14} />
           <span>Back to Dashboard</span>
         </Link>
       </div>
@@ -179,11 +165,11 @@ export default function CompanyDetail({ watchlist = [] }) {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2.5">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               {company?.name}
             </h1>
             {company?.ticker && (
-              <span className="font-mono text-xs uppercase bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+              <span className="font-mono text-xs uppercase bg-muted text-muted-foreground px-2 py-0.5 rounded border border-border">
                 {company.ticker}
               </span>
             )}
@@ -194,7 +180,7 @@ export default function CompanyDetail({ watchlist = [] }) {
               </>
             )}
           </div>
-          <p className="text-xs sm:text-sm text-slate-500">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Continuous intelligence feed correlated with retained institutional memory.
           </p>
         </div>
@@ -211,12 +197,12 @@ export default function CompanyDetail({ watchlist = [] }) {
 
       {/* Staged Progress Slim Alert Area under Header */}
       {analyzing && (
-        <Alert className="bg-blue-50 border-blue-200 text-blue-900 p-3.5 flex items-center justify-between shadow-xs">
+        <Alert className="bg-muted border border-border text-foreground p-3.5 flex items-center justify-between shadow-xs">
           <div className="flex items-center gap-2.5 min-w-0 pr-2">
-            <Loader2 className="h-4 w-4 animate-spin text-blue-700 shrink-0" />
+            <Icon name="progress_activity" size={16} className="animate-spin text-primary shrink-0" />
             <div className="text-xs truncate">
-              <span className="font-semibold text-blue-950">Deep Scrape & Memory Synthesis:</span>{' '}
-              <span className="font-mono font-medium text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded border border-blue-200 ml-1">
+              <span className="font-semibold text-foreground">Deep Scrape & Memory Synthesis:</span>{' '}
+              <span className="font-mono font-medium text-foreground bg-accent px-2 py-0.5 rounded border border-border ml-1">
                 {currentStageText}
               </span>
             </div>
@@ -227,8 +213,8 @@ export default function CompanyDetail({ watchlist = [] }) {
                 key={stage}
                 className={`px-2 py-0.5 rounded font-mono transition-colors ${
                   idx === stageIndex
-                    ? 'bg-blue-700 text-white font-semibold shadow-2xs'
-                    : 'text-slate-400'
+                    ? 'bg-primary text-primary-foreground font-semibold shadow-2xs'
+                    : 'text-muted-foreground'
                 }`}
               >
                 {stage}
@@ -240,15 +226,15 @@ export default function CompanyDetail({ watchlist = [] }) {
 
       {/* Main View Area: Empty state or Tabs */}
       {analyses.length === 0 ? (
-        <Card className="max-w-md mx-auto text-center p-8 bg-white border border-border shadow-xs">
+        <Card className="max-w-md mx-auto text-center p-8 bg-card border border-border shadow-xs">
           <CardHeader className="p-0 pb-4 flex flex-col items-center">
-            <div className="h-12 w-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 mb-3">
-              <Sparkles className="h-6 w-6" />
+            <div className="h-12 w-12 rounded-full bg-accent border border-border flex items-center justify-center text-foreground mb-3">
+              <Icon name="auto_awesome" size={24} />
             </div>
-            <CardTitle className="text-lg font-semibold text-slate-900">
+            <CardTitle className="text-lg font-semibold text-foreground">
               No Intelligence Generated Yet
             </CardTitle>
-            <CardDescription className="text-xs text-slate-500 max-w-xs mt-1">
+            <CardDescription className="text-xs text-muted-foreground max-w-xs mt-1">
               Click "Analyze now" above to trigger autonomous news scraping. It will extract key events,
               compute sentiment, identify recurring themes, and build initial memory for {company?.name}.
             </CardDescription>
@@ -265,35 +251,28 @@ export default function CompanyDetail({ watchlist = [] }) {
       ) : (
         /* Tabs for Analysis | History | Notes so the page isn't one long scroll on mobile */
         <Tabs defaultValue="analysis" className="w-full space-y-4">
-          <TabsList className="grid grid-cols-3 w-full max-w-md h-10 p-1 bg-slate-100 border border-slate-200">
+          <TabsList className="grid grid-cols-3 w-full max-w-md h-10 p-1 bg-muted border border-border">
             <TabsTrigger
               value="analysis"
-              className="text-xs sm:text-sm font-medium h-8 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-xs"
+              className="text-xs sm:text-sm font-medium h-8 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
             >
               Analysis
             </TabsTrigger>
             <TabsTrigger
               value="history"
-              className="text-xs sm:text-sm font-medium h-8 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-xs"
+              className="text-xs sm:text-sm font-medium h-8 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
             >
               History ({analyses.length})
             </TabsTrigger>
             <TabsTrigger
               value="notes"
-              className="text-xs sm:text-sm font-medium h-8 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-xs"
+              className="text-xs sm:text-sm font-medium h-8 data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs"
             >
               Notes ({notes.length})
             </TabsTrigger>
           </TabsList>
 
-          {/* Analysis Tab: Exact requested card order:
-              1) Summary
-              2) What changed (subtle left border, not a glow)
-              3) Key events (ExternalLink icon)
-              4) Recurring themes
-              5) Memory used
-              6) Sources
-          */}
+          {/* Analysis Tab: Cards in exact requested order */}
           <TabsContent value="analysis" className="space-y-4 pt-1">
             {selectedAnalysis && (
               <>
@@ -307,13 +286,13 @@ export default function CompanyDetail({ watchlist = [] }) {
                   createdAt={selectedAnalysis.created_at}
                 />
 
-                {/* 2) What changed (highlighted with a subtle left border, not a glow) */}
+                {/* 2) What changed (highlighted with a subtle left border in ring/tan color #B89B6A, not a glow) */}
                 <WhatChanged
                   whatChanged={selectedAnalysis.what_changed}
                   previousDate={selectedAnalysis.created_at}
                 />
 
-                {/* 3) Key events (source links with ExternalLink icon) */}
+                {/* 3) Key events (source links with open_in_new icon) */}
                 <KeyEvents events={selectedAnalysis.key_events} />
 
                 {/* 4) Recurring themes */}

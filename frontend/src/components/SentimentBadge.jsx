@@ -2,8 +2,11 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 
 /**
- * SentimentBadge: Soft, formal sentiment indicator.
- * Soft green / neutral gray / soft red badges. No loud colors.
+ * SentimentBadge: Warm cream minimal formal sentiment indicator.
+ * Palette:
+ * - Positive: soft green (#E4EFDF on #3F6B35 text)
+ * - Neutral: tan (#EFE6D2 on #6B5B45 text)
+ * - Negative: soft red (#F5E0DB on #9B3B2E text)
  * Values: 'positive' | 'neutral' | 'negative'
  */
 export default function SentimentBadge({ sentiment = 'neutral', className = '' }) {
@@ -12,18 +15,18 @@ export default function SentimentBadge({ sentiment = 'neutral', className = '' }
   const config = {
     positive: {
       label: 'Bullish / Positive',
-      dotColor: 'bg-emerald-600',
-      classes: 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-50',
+      dotColor: 'bg-[#3F6B35]',
+      classes: 'bg-[#E4EFDF] text-[#3F6B35] border-[#C9DEC2]',
     },
     neutral: {
       label: 'Neutral',
-      dotColor: 'bg-slate-500',
-      classes: 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-100',
+      dotColor: 'bg-[#6B5B45]',
+      classes: 'bg-[#EFE6D2] text-[#6B5B45] border-[#DFD3B9]',
     },
     negative: {
       label: 'Bearish / Caution',
-      dotColor: 'bg-rose-600',
-      classes: 'bg-rose-50 text-rose-800 border-rose-200 hover:bg-rose-50',
+      dotColor: 'bg-[#9B3B2E]',
+      classes: 'bg-[#F5E0DB] text-[#9B3B2E] border-[#E8C6BE]',
     },
   };
 

@@ -1,10 +1,4 @@
-import {
-  CircleCheck,
-  Info,
-  LoaderCircle,
-  OctagonX,
-  TriangleAlert,
-} from "lucide-react"
+import Icon from "@/components/Icon"
 import { Toaster as Sonner } from "sonner"
 
 const Toaster = ({
@@ -15,11 +9,11 @@ const Toaster = ({
       theme="light"
       className="toaster group"
       icons={{
-        success: <CircleCheck className="h-4 w-4" />,
-        info: <Info className="h-4 w-4" />,
-        warning: <TriangleAlert className="h-4 w-4" />,
-        error: <OctagonX className="h-4 w-4" />,
-        loading: <LoaderCircle className="h-4 w-4 animate-spin" />,
+        success: <Icon name="check_circle" size={16} />,
+        info: <Icon name="info" size={16} />,
+        warning: <Icon name="warning" size={16} />,
+        error: <Icon name="error" size={16} />,
+        loading: <Icon name="progress_activity" size={16} className="animate-spin" />,
       }}
       toastOptions={{
         classNames: {

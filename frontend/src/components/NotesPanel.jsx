@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StickyNote, Send, Loader2 } from 'lucide-react';
+import Icon from './Icon';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
@@ -36,15 +36,15 @@ export default function NotesPanel({ notes = [], onAddNote }) {
   };
 
   return (
-    <Card className="bg-white border border-border shadow-xs space-y-4">
+    <Card className="bg-card border-border shadow-xs space-y-4">
       <CardHeader className="p-4 sm:p-5 pb-0">
         <div className="flex items-center gap-2">
-          <StickyNote className="h-4 w-4 text-blue-700" />
-          <CardTitle className="text-sm font-semibold text-slate-900 tracking-tight">
+          <Icon name="note_add" size={16} className="text-foreground" />
+          <CardTitle className="text-sm font-semibold text-foreground tracking-tight">
             Analyst Notes {notes.length > 0 && `(${notes.length})`}
           </CardTitle>
         </div>
-        <p className="text-xs text-slate-500 pt-1">
+        <p className="text-xs text-muted-foreground pt-1">
           Analyst observations directly augment the institutional memory graph and steer future news intelligence runs.
         </p>
       </CardHeader>
@@ -53,7 +53,7 @@ export default function NotesPanel({ notes = [], onAddNote }) {
         {/* Note Input Box */}
         <form onSubmit={handleSubmit} className="space-y-2">
           <Textarea
-            className="min-h-[90px] text-xs bg-slate-50/50 border-slate-200 focus-visible:bg-white resize-y"
+            className="min-h-[90px] text-xs bg-muted/50 border-border focus-visible:bg-card resize-y"
             placeholder="Add analyst context, hypotheses, or key management targets to watch (Cmd/Ctrl + Enter to save)..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
@@ -62,28 +62,28 @@ export default function NotesPanel({ notes = [], onAddNote }) {
           />
 
           {error && (
-            <p className="text-xs text-rose-600 font-medium">
+            <p className="text-xs text-[#9B3B2E] font-medium">
               {error}
             </p>
           )}
 
           <div className="flex items-center justify-between pt-1">
-            <span className="text-[11px] text-slate-400">
+            <span className="text-[11px] text-muted-foreground">
               Saved notes become part of memory
             </span>
             <Button
               type="submit"
               disabled={!content.trim() || submitting}
-              className="h-10 min-h-[40px] px-4 bg-blue-700 hover:bg-blue-800 text-white font-medium shadow-xs"
+              className="h-10 min-h-[40px] px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-xs"
             >
               {submitting ? (
                 <>
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  <Icon name="progress_activity" size={14} className="animate-spin mr-1.5" />
                   <span>Saving...</span>
                 </>
               ) : (
                 <>
-                  <Send className="mr-1.5 h-3.5 w-3.5" />
+                  <Icon name="send" size={14} className="mr-1.5" />
                   <span>Add note</span>
                 </>
               )}
@@ -92,9 +92,9 @@ export default function NotesPanel({ notes = [], onAddNote }) {
         </form>
 
         {/* Notes List */}
-        <div className="pt-2 border-t border-border/60 space-y-2.5">
+        <div className="pt-2 border-t border-border space-y-2.5">
           {notes.length === 0 ? (
-            <p className="text-xs text-slate-400 italic text-center py-4">
+            <p className="text-xs text-muted-foreground italic text-center py-4">
               No analyst notes recorded yet. Add one above to seed the memory graph.
             </p>
           ) : (
@@ -112,15 +112,15 @@ export default function NotesPanel({ notes = [], onAddNote }) {
               return (
                 <div
                   key={item.id}
-                  className="p-3 rounded-md bg-slate-50 border border-slate-200 space-y-1.5 text-xs"
+                  className="p-3 rounded-md bg-muted border border-border space-y-1.5 text-xs"
                 >
-                  <div className="flex items-center justify-between text-[11px] text-slate-500">
-                    <span className="font-semibold text-blue-800 uppercase tracking-wider">
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span className="font-semibold text-foreground uppercase tracking-wider">
                       Analyst Memory Node
                     </span>
                     <span className="font-mono">{dateStr}</span>
                   </div>
-                  <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">
+                  <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">
                     {item.note}
                   </p>
                 </div>

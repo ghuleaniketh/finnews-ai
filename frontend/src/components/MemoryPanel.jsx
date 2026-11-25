@@ -1,5 +1,5 @@
 import React from 'react';
-import { Brain, Cpu } from 'lucide-react';
+import Icon from './Icon';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -12,21 +12,21 @@ export default function MemoryPanel({ memoryItems = [] }) {
   }
 
   return (
-    <Card className="bg-white border border-border shadow-xs">
+    <Card className="bg-card border-border shadow-xs">
       <CardHeader className="p-4 sm:p-5 pb-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Brain className="h-4 w-4 text-blue-700" />
-            <CardTitle className="text-sm font-semibold text-slate-900 tracking-tight">
+            <Icon name="psychology" size={18} className="text-foreground" />
+            <CardTitle className="text-sm font-semibold text-foreground tracking-tight">
               Memory Recalled & Applied
             </CardTitle>
           </div>
-          <Badge variant="outline" className="text-[11px] font-mono text-slate-600 bg-slate-50 border-slate-200">
-            <Cpu className="h-3 w-3 mr-1 text-slate-500" />
+          <Badge variant="outline" className="text-[11px] font-mono text-foreground bg-muted border-border">
+            <Icon name="memory" size={13} className="mr-1 text-muted-foreground" />
             Context Graph
           </Badge>
         </div>
-        <p className="text-xs text-slate-500 pt-1">
+        <p className="text-xs text-muted-foreground pt-1">
           Historical analyst findings and prior news syntheses integrated into this run:
         </p>
       </CardHeader>
@@ -36,9 +36,9 @@ export default function MemoryPanel({ memoryItems = [] }) {
           {memoryItems.map((item, idx) => (
             <div
               key={idx}
-              className="flex items-start gap-2.5 p-2.5 rounded-md bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed"
+              className="flex items-start gap-2.5 p-2.5 rounded-md bg-muted border border-border text-xs text-foreground/90 leading-relaxed"
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-blue-700 mt-1.5 shrink-0" />
+              <span className="h-1.5 w-1.5 rounded-full bg-[#B89B6A] mt-1.5 shrink-0" />
               <span>{item}</span>
             </div>
           ))}

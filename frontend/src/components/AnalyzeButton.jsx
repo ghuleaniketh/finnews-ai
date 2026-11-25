@@ -1,10 +1,10 @@
 import React from 'react';
-import { Zap, Loader2 } from 'lucide-react';
+import Icon from './Icon';
 import { Button } from '@/components/ui/button';
 
 /**
  * AnalyzeButton: triggers automated scrape & synthesis run.
- * Disabled while running (staged progress displayed via loadingText).
+ * Uses primary dark brown styling with strong contrast.
  */
 export default function AnalyzeButton({
   onAnalyze,
@@ -18,16 +18,16 @@ export default function AnalyzeButton({
       onClick={onAnalyze}
       disabled={loading}
       aria-busy={loading}
-      className="min-h-[40px] px-4 bg-blue-700 hover:bg-blue-800 text-white font-medium shadow-xs transition-colors"
+      className="min-h-[40px] px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-xs transition-colors"
     >
       {loading ? (
         <>
-          <Loader2 className="mr-2 h-4 w-4 animate-spin shrink-0" />
+          <Icon name="progress_activity" size={16} className="animate-spin mr-1.5 shrink-0" />
           <span>{loadingText || 'Synthesizing...'}</span>
         </>
       ) : (
         <>
-          <Zap className="mr-1.5 h-4 w-4 shrink-0" />
+          <Icon name="bolt" size={16} className="mr-1.5 shrink-0" />
           <span>{label}</span>
         </>
       )}

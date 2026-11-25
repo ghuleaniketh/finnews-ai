@@ -1,11 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import {
-  Menu,
-  Activity,
-  Plus,
-  TrendingUp,
-} from 'lucide-react';
+import Icon from './Icon';
 import WatchlistSidebar, { WatchlistContent } from './WatchlistSidebar';
 import AddCompanyForm from './AddCompanyForm';
 import { getHealth } from '../api/endpoints';
@@ -34,7 +29,7 @@ export const AddCompanyContext = createContext({
 export const useAddCompany = () => useContext(AddCompanyContext);
 
 /**
- * Layout: Formal minimal light application shell.
+ * Layout: Warm cream minimal formal application shell.
  * - Sticky top header with brand, connection status badge, mobile menu, and primary Add Company button.
  * - Desktop static left sidebar and mobile left Sheet.
  * - Add Company Dialog reusable across header and dashboard empty states.
@@ -83,32 +78,32 @@ export default function Layout({
 
   return (
     <AddCompanyContext.Provider value={{ openAddDialog }}>
-      <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+      <div className="min-h-screen flex flex-col bg-background text-foreground">
         {/* Sticky Top Header */}
-        <header className="sticky top-0 z-40 w-full border-b border-border bg-white shadow-xs">
+        <header className="sticky top-0 z-40 w-full border-b border-border bg-card shadow-2xs">
           <div className="flex h-14 items-center justify-between px-3 sm:px-6 max-w-7xl mx-auto w-full gap-2">
             {/* Left: Mobile Menu Trigger + Brand */}
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden h-10 w-10 shrink-0 text-slate-700 hover:text-slate-900 hover:bg-slate-100"
+                className="lg:hidden h-10 w-10 shrink-0 text-foreground hover:bg-muted"
                 onClick={() => setSheetOpen(true)}
                 aria-label="Open navigation menu"
               >
-                <Menu className="h-5 w-5" />
+                <Icon name="menu" size={20} />
               </Button>
 
               <Link
                 to="/"
-                className="flex items-center gap-2 text-slate-900 hover:opacity-90 transition-opacity"
+                className="flex items-center gap-2 text-foreground hover:opacity-90 transition-opacity"
               >
-                <div className="h-8 w-8 rounded-md bg-blue-700 flex items-center justify-center text-white shrink-0 shadow-xs">
-                  <TrendingUp className="h-4 w-4" />
+                <div className="h-8 w-8 rounded-md bg-primary flex items-center justify-center text-primary-foreground shrink-0 shadow-xs">
+                  <Icon name="trending_up" size={18} />
                 </div>
                 <div className="flex items-baseline gap-1.5">
-                  <span className="font-bold text-base tracking-tight text-slate-900">FinNews</span>
-                  <span className="font-semibold text-xs tracking-wider text-blue-700 uppercase bg-blue-50 border border-blue-200 px-1.5 py-0.2 rounded">
+                  <span className="font-bold text-base tracking-tight text-foreground">FinNews</span>
+                  <span className="font-semibold text-xs tracking-wider text-foreground uppercase bg-accent border border-border px-1.5 py-0.2 rounded">
                     AI
                   </span>
                 </div>
@@ -121,24 +116,24 @@ export default function Layout({
               {isMock ? (
                 <Badge
                   variant="outline"
-                  className="bg-amber-50 text-amber-800 border-amber-300 px-2 py-0.5 text-xs font-medium flex items-center gap-1.5"
+                  className="bg-[#EFE6D2] text-[#6B5B45] border-[#DFD3B9] px-2 py-0.5 text-xs font-medium flex items-center gap-1.5"
                   title="Operating in mock mode with sample financial dataset"
                 >
-                  <Activity className="h-3 w-3 text-amber-600 shrink-0" />
+                  <Icon name="analytics" size={13} className="shrink-0" />
                   <span className="hidden sm:inline">Mock Mode</span>
                   <span className="sm:hidden">Mock</span>
                 </Badge>
               ) : (
                 <Badge
                   variant="outline"
-                  className="bg-emerald-50 text-emerald-800 border-emerald-300 px-2 py-0.5 text-xs font-medium flex items-center gap-1.5"
+                  className="bg-[#E4EFDF] text-[#3F6B35] border-[#C9DEC2] px-2 py-0.5 text-xs font-medium flex items-center gap-1.5"
                   title={`Live API connected (${healthStatus})`}
                 >
                   <span
                     className={`h-2 w-2 rounded-full shrink-0 ${
                       healthStatus === 'connected' || healthStatus === 'online'
-                        ? 'bg-emerald-500'
-                        : 'bg-rose-500'
+                        ? 'bg-[#3F6B35]'
+                        : 'bg-[#9B3B2E]'
                     }`}
                   />
                   <span className="hidden sm:inline">Live API</span>
@@ -149,10 +144,10 @@ export default function Layout({
               {/* Primary Add Company Button: always visible on every screen size */}
               <Button
                 onClick={openAddDialog}
-                className="h-10 min-h-[40px] px-3 sm:px-4 bg-blue-700 hover:bg-blue-800 text-white font-medium shadow-xs transition-colors"
+                className="h-10 min-h-[40px] px-3 sm:px-4 bg-primary hover:bg-primary/90 text-primary-foreground font-medium shadow-xs transition-colors"
                 aria-label="Add company to watchlist"
               >
-                <Plus className="h-4 w-4 mr-1 sm:mr-1.5 shrink-0" />
+                <Icon name="add" size={16} className="mr-1 sm:mr-1.5 shrink-0" />
                 <span className="hidden sm:inline text-sm">Add Company</span>
                 <span className="sm:hidden text-xs">Add</span>
               </Button>
@@ -170,7 +165,7 @@ export default function Layout({
 
           {/* Mobile Navigation Sheet */}
           <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-            <SheetContent side="left" className="p-0 w-80 max-w-[85vw] border-r border-border">
+            <SheetContent side="left" className="p-0 w-80 max-w-[85vw] border-r border-border bg-card">
               <SheetHeader className="sr-only">
                 <SheetTitle>Navigation Menu</SheetTitle>
               </SheetHeader>
@@ -190,12 +185,12 @@ export default function Layout({
 
         {/* Global Add Company Dialog */}
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogContent className="sm:max-w-[425px] w-[92vw] max-w-md p-6 bg-white border border-border shadow-lg rounded-lg">
+          <DialogContent className="sm:max-w-[425px] w-[92vw] max-w-md p-6 bg-card border border-border shadow-lg rounded-lg">
             <DialogHeader>
-              <DialogTitle className="text-lg font-semibold tracking-tight text-slate-900">
+              <DialogTitle className="text-lg font-semibold tracking-tight text-foreground">
                 Add Company or Topic
               </DialogTitle>
-              <DialogDescription className="text-xs text-slate-500">
+              <DialogDescription className="text-xs text-muted-foreground">
                 Track financial news, monitor sentiment trajectory, and accumulate institutional memory.
               </DialogDescription>
             </DialogHeader>

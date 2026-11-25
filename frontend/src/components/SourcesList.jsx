@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link2, ExternalLink } from 'lucide-react';
+import Icon from './Icon';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 /**
@@ -15,11 +15,11 @@ export default function SourcesList({ sources = [] }) {
   };
 
   return (
-    <Card className="bg-white border border-border shadow-xs">
+    <Card className="bg-card border-border shadow-xs">
       <CardHeader className="p-4 sm:p-5 pb-2">
         <div className="flex items-center gap-2">
-          <Link2 className="h-4 w-4 text-slate-700" />
-          <CardTitle className="text-sm font-semibold text-slate-900 tracking-tight">
+          <Icon name="link" size={16} className="text-foreground" />
+          <CardTitle className="text-sm font-semibold text-foreground tracking-tight">
             Sources {sources.length > 0 && `(${sources.length})`}
           </CardTitle>
         </div>
@@ -27,7 +27,7 @@ export default function SourcesList({ sources = [] }) {
 
       <CardContent className="p-4 sm:p-5 pt-2">
         {!sources || sources.length === 0 ? (
-          <p className="text-xs text-slate-500 italic py-2">
+          <p className="text-xs text-muted-foreground italic py-2">
             No primary sources linked for this entry.
           </p>
         ) : (
@@ -38,16 +38,16 @@ export default function SourcesList({ sources = [] }) {
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex flex-col justify-between p-3 rounded-md bg-slate-50 hover:bg-slate-100 border border-slate-200 hover:border-slate-300 transition-colors min-h-[40px]"
+                className="group flex flex-col justify-between p-3 rounded-md bg-muted hover:bg-accent border border-border transition-colors min-h-[40px]"
                 title={item.title}
               >
                 <div className="flex items-start justify-between gap-2">
-                  <span className="text-xs font-medium text-slate-800 group-hover:text-blue-800 line-clamp-2 leading-snug">
+                  <span className="text-xs font-medium text-foreground group-hover:underline line-clamp-2 leading-snug">
                     {item.title}
                   </span>
-                  <ExternalLink className="h-3 w-3 text-slate-400 group-hover:text-blue-700 shrink-0 mt-0.5" />
+                  <Icon name="open_in_new" size={13} className="text-muted-foreground group-hover:text-foreground shrink-0 mt-0.5" />
                 </div>
-                <span className="text-[11px] font-mono text-slate-500 mt-2">
+                <span className="text-[11px] font-mono text-muted-foreground mt-2">
                   {getDomain(item.url)}
                 </span>
               </a>

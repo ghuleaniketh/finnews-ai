@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
-import {
-  Search,
-  Trash2,
-  LayoutDashboard,
-  Building2,
-} from 'lucide-react';
+import Icon from './Icon';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -14,6 +9,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 /**
  * WatchlistContent: Shared list and search interface used in both desktop sidebar
  * and mobile Sheet navigation drawer.
+ * Warm cream palette: active item is tan (#E8DCC2) with ring/tan border (#B89B6A).
  */
 export function WatchlistContent({
   watchlist = [],
@@ -44,20 +40,20 @@ export function WatchlistContent({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white select-none">
+    <div className="flex flex-col h-full bg-card select-none">
       {/* Sidebar Header */}
       <div className="px-4 py-3.5 border-b border-border flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Building2 className="h-4 w-4 text-blue-700" />
-          <span className="font-semibold text-xs tracking-wider uppercase text-slate-700">Watchlist</span>
+          <Icon name="apartment" size={16} className="text-foreground" />
+          <span className="font-semibold text-xs tracking-wider uppercase text-foreground">Watchlist</span>
         </div>
-        <Badge variant="secondary" className="font-mono text-xs font-semibold px-2 py-0 text-slate-700 bg-slate-100">
+        <Badge variant="secondary" className="font-mono text-xs font-semibold px-2 py-0 text-foreground bg-muted border border-border">
           {watchlist.length}
         </Badge>
       </div>
 
       {/* Navigation Top Links & Search */}
-      <div className="p-3 space-y-2 border-b border-border/60">
+      <div className="p-3 space-y-2 border-b border-border">
         <NavLink
           to="/"
           end
@@ -65,23 +61,23 @@ export function WatchlistContent({
           className={({ isActive }) =>
             `flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors min-h-[40px] ${
               isActive
-                ? 'bg-blue-50 text-blue-800 font-semibold border border-blue-200'
-                : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                ? 'bg-accent text-accent-foreground font-semibold border border-border'
+                : 'text-foreground/80 hover:bg-muted hover:text-foreground'
             }`
           }
         >
-          <LayoutDashboard className="h-4 w-4 text-slate-500 shrink-0" />
+          <Icon name="dashboard" size={16} className="text-muted-foreground shrink-0" />
           <span>Dashboard Overview</span>
         </NavLink>
 
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+          <Icon name="search" size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <Input
             type="text"
             placeholder="Search companies or tickers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8 h-9 text-xs bg-slate-50 border-slate-200 focus-visible:bg-white"
+            className="pl-8 h-9 text-xs bg-muted border-border focus-visible:bg-card"
           />
         </div>
       </div>
@@ -90,7 +86,7 @@ export function WatchlistContent({
       <ScrollArea className="flex-1 px-3 py-2">
         <div className="space-y-1">
           {filteredWatchlist.length === 0 ? (
-            <div className="py-8 text-center text-xs text-slate-500">
+            <div className="py-8 text-center text-xs text-muted-foreground">
               {searchTerm ? 'No matching entities found' : 'Your watchlist is empty'}
             </div>
           ) : (
@@ -102,15 +98,15 @@ export function WatchlistContent({
                 className={({ isActive }) =>
                   `group flex items-center justify-between px-3 py-2 rounded-md transition-colors min-h-[40px] ${
                     isActive
-                      ? 'bg-blue-50 text-blue-900 border border-blue-200 font-medium'
-                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-accent text-accent-foreground border-l-2 border-[#B89B6A] font-medium'
+                      : 'text-foreground/80 hover:bg-muted hover:text-foreground'
                   }`
                 }
               >
                 <div className="flex flex-col min-w-0 pr-2">
                   <span className="text-sm truncate leading-snug">{item.name}</span>
                   {item.ticker && (
-                    <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wide">
+                    <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wide">
                       {item.ticker}
                     </span>
                   )}
@@ -120,12 +116,12 @@ export function WatchlistContent({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10 min-h-[40px] min-w-[40px] text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded shrink-0 opacity-80 group-hover:opacity-100 flex items-center justify-center"
+                  className="h-10 w-10 min-h-[40px] min-w-[40px] text-muted-foreground hover:text-[#9B3B2E] hover:bg-[#F5E0DB] rounded shrink-0 opacity-80 group-hover:opacity-100 flex items-center justify-center"
                   onClick={(e) => handleDelete(e, item)}
                   title={`Remove ${item.name} from watchlist`}
                   aria-label={`Remove ${item.name}`}
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Icon name="delete" size={16} />
                 </Button>
               </NavLink>
             ))
@@ -141,7 +137,7 @@ export function WatchlistContent({
  */
 export default function WatchlistSidebar({ watchlist = [], onDeleteCompany }) {
   return (
-    <aside className="hidden lg:flex w-72 xl:w-80 border-r border-border bg-white flex-col h-[calc(100vh-57px)] sticky top-[57px] shrink-0 z-20">
+    <aside className="hidden lg:flex w-72 xl:w-80 border-r border-border bg-card flex-col h-[calc(100vh-57px)] sticky top-[57px] shrink-0 z-20">
       <WatchlistContent
         watchlist={watchlist}
         onDeleteCompany={onDeleteCompany}
