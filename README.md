@@ -37,10 +37,17 @@ FinNews AI maintains a structured entity relationship and fact graph in SQLite-v
 
 ---
 
-### 4. Historical Trajectory, Sentiment Trend & Analyst Notes
-Analysts can inspect historical runs, observe multi-period sentiment transitions (Neutral &rarr; Bullish), review primary journalistic sources, and record persistent analyst notes that feed directly back into future memory recall.
+### 4. Historical Trajectory & Multi-Period Sentiment Trend
+Analysts can inspect historical runs, observe multi-period sentiment transitions (Neutral &rarr; Bullish), review primary journalistic sources, and assess chronological market narrative progression on an interactive timeline chart.
 
-![Historical Timeline & Analyst Notes](screenshots/timeline_and_notes.png)
+![Historical Timeline & Sentiment Trend](screenshots/timeline_and_notes.png)
+
+---
+
+### 5. Persistent Analyst Notes & Continuous Memory Injection
+Analysts record discrete strategic observations directly into the company dossier. Every note acts as a persistent institutional memory anchor that directly conditions subsequent Gemini news analyses and contextual memory recall.
+
+![Persistent Analyst Notes](screenshots/analyst_notes.png)
 
 ---
 
@@ -70,8 +77,10 @@ Analysts can inspect historical runs, observe multi-period sentiment transitions
 - Analysts can append notes directly to any company dossier (e.g., *"Watch deposit pricing probe outcome and CEO succession"*).
 - Notes are instantly embedded and committed to the Memento knowledge base, directly conditioning future Gemini analyses.
 
-### 6. Modern Glassmorphism Interface
-- Dark-mode terminal-inspired financial aesthetics built with **React 19**, **Vite**, and **Lucide React**.
+### 6. Minimalist Warm Editorial Interface
+- Refined financial research aesthetics built with **React 19**, **Vite**, **Tailwind CSS**, and **Google Material Symbols**.
+- Styled on **shadcn/ui** component primitives with a warm cream palette (`#FAF6EE`), high-contrast typography (`Inter`, `JetBrains Mono`), and minimal executive cards.
+- Clean tabbed dossier navigation (Analysis, History, Notes) preventing vertical clutter and optimizing research workflows.
 - Responsive data visualizations using **Recharts** for historical sentiment trajectory.
 
 ---
@@ -131,8 +140,8 @@ sequenceDiagram
 | **Build Tool** | **Vite 8** | Lightning-fast HMR and optimized production bundling. |
 | **Routing** | **React Router v7** | Client-side routing between Dashboard (`/`) and Company Detail (`/company/:id`). |
 | **Data Visualization** | **Recharts** | Interactive SVG sentiment progression and historical timeline rendering. |
-| **UI & Icons** | **Lucide React** | Clean, consistent icons for financial telemetry and navigation. |
-| **Styling** | **Custom CSS3** | High-contrast dark glassmorphism system with CSS variables and responsive grid layouts. |
+| **UI & Icons** | **Google Material Symbols & shadcn/ui** | Clean, financial iconography and accessible component primitives. |
+| **Styling** | **Tailwind CSS** | Warm cream editorial design system (`#FAF6EE`) with fine borders and executive typography. |
 | **HTTP Client** | **Axios** | REST client with automated fallback support for mock data in testing environments. |
 | **Backend Framework** | **FastAPI** | High-performance asynchronous Python API framework with automatic OpenAPI docs. |
 | **ASGI Server** | **Uvicorn** | ASGI server with multi-worker production capabilities. |
@@ -157,7 +166,8 @@ finnews-ai/
 │   ├── company_overview.png
 │   ├── company_detail_full.png
 │   ├── memory_panel.png
-│   └── timeline_and_notes.png
+│   ├── timeline_and_notes.png
+│   └── analyst_notes.png
 │
 ├── backend/                       # FastAPI Backend Service
 │   ├── requirements.txt           # Python backend dependencies
