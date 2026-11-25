@@ -1,31 +1,28 @@
 import React, { useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
-  TrendingUp,
   Search,
-  Plus,
   Trash2,
-  X,
   LayoutDashboard,
   Building2,
 } from 'lucide-react';
-import AddCompanyForm from './AddCompanyForm';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 /**
- * WatchlistSidebar: sidebar navigation listing tracked companies/topics,
- * quick search filter, delete actions, and company onboarding form.
+ * WatchlistContent: Shared list and search interface used in both desktop sidebar
+ * and mobile Sheet navigation drawer.
  */
-export default function WatchlistSidebar({
+export function WatchlistContent({
   watchlist = [],
-  selectedId,
   onDeleteCompany,
-  onAddCompany,
-  isOpen = false,
-  onClose,
+  onItemClick,
 }) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAddForm, setShowAddForm] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const filteredWatchlist = watchlist.filter((item) => {
     const term = searchTerm.toLowerCase();
@@ -38,114 +35,117 @@ export default function WatchlistSidebar({
   const handleDelete = (e, item) => {
     e.preventDefault();
     e.stopPropagation();
-    if (window.confirm(`Remove ${item.name} from watchlist?`)) {
+    if (window.confirm(`Remove "${item.name}" from your watchlist?`)) {
       onDeleteCompany(item.id);
-      if (String(selectedId) === String(item.id)) {
+      if (location.pathname === `/company/${item.id}`) {
         navigate('/');
       }
     }
   };
 
   return (
-    <aside className={`sidebar-container ${isOpen ? 'open' : ''}`}>
-      <div className="sidebar-header">
-        <div className="sidebar-title-row">
-          <Building2 size={16} style={{ color: 'var(--accent-primary)' }} />
-          <span className="sidebar-title">Watchlist</span>
-          <span className="sidebar-count-badge">{watchlist.length}</span>
+    <div className="flex flex-col h-full bg-white select-none">
+      {/* Sidebar Header */}
+      <div className="px-4 py-3.5 border-b border-border flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Building2 className="h-4 w-4 text-blue-700" />
+          <span className="font-semibold text-xs tracking-wider uppercase text-slate-700">Watchlist</span>
         </div>
-        {onClose && (
-          <button
-            type="button"
-            className="mobile-menu-btn"
-            style={{ display: isOpen ? 'block' : 'none' }}
-            onClick={onClose}
-            aria-label="Close menu"
-          >
-            <X size={16} />
-          </button>
-        )}
+        <Badge variant="secondary" className="font-mono text-xs font-semibold px-2 py-0 text-slate-700 bg-slate-100">
+          {watchlist.length}
+        </Badge>
       </div>
 
-      <div className="sidebar-content">
+      {/* Navigation Top Links & Search */}
+      <div className="p-3 space-y-2 border-b border-border/60">
         <NavLink
           to="/"
-          className={({ isActive }) =>
-            `watchlist-nav-item ${isActive ? 'active' : ''}`
-          }
-          onClick={onClose}
           end
+          onClick={onItemClick}
+          className={({ isActive }) =>
+            `flex items-center gap-2.5 px-3 py-2 rounded-md text-sm font-medium transition-colors min-h-[40px] ${
+              isActive
+                ? 'bg-blue-50 text-blue-800 font-semibold border border-blue-200'
+                : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+            }`
+          }
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <LayoutDashboard size={15} style={{ color: 'var(--accent-cyan)' }} />
-            <span style={{ fontSize: '0.88rem', fontWeight: 600 }}>Dashboard Overview</span>
-          </div>
+          <LayoutDashboard className="h-4 w-4 text-slate-500 shrink-0" />
+          <span>Dashboard Overview</span>
         </NavLink>
 
-        <div className="sidebar-search-box">
-          <Search size={14} className="sidebar-search-icon" />
-          <input
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-slate-400 pointer-events-none" />
+          <Input
             type="text"
-            className="sidebar-search-input"
             placeholder="Search companies or tickers..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8 h-9 text-xs bg-slate-50 border-slate-200 focus-visible:bg-white"
           />
         </div>
+      </div>
 
-        <div className="watchlist-nav-list">
+      {/* Watchlist Item Navigation */}
+      <ScrollArea className="flex-1 px-3 py-2">
+        <div className="space-y-1">
           {filteredWatchlist.length === 0 ? (
-            <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', padding: '12px 8px', textAlign: 'center' }}>
-              {searchTerm ? 'No matching companies' : 'Watchlist is empty'}
+            <div className="py-8 text-center text-xs text-slate-500">
+              {searchTerm ? 'No matching entities found' : 'Your watchlist is empty'}
             </div>
           ) : (
             filteredWatchlist.map((item) => (
               <NavLink
                 key={item.id}
                 to={`/company/${item.id}`}
+                onClick={onItemClick}
                 className={({ isActive }) =>
-                  `watchlist-nav-item ${isActive ? 'active' : ''}`
+                  `group flex items-center justify-between px-3 py-2 rounded-md transition-colors min-h-[40px] ${
+                    isActive
+                      ? 'bg-blue-50 text-blue-900 border border-blue-200 font-medium'
+                      : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                  }`
                 }
-                onClick={onClose}
               >
-                <div className="watchlist-item-info">
-                  <span className="watchlist-item-name">{item.name}</span>
+                <div className="flex flex-col min-w-0 pr-2">
+                  <span className="text-sm truncate leading-snug">{item.name}</span>
                   {item.ticker && (
-                    <span className="watchlist-item-ticker">{item.ticker}</span>
+                    <span className="text-[11px] font-mono text-slate-500 uppercase tracking-wide">
+                      {item.ticker}
+                    </span>
                   )}
                 </div>
-                <button
+
+                <Button
                   type="button"
-                  className="watchlist-item-delete"
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 min-h-[40px] min-w-[40px] text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded shrink-0 opacity-80 group-hover:opacity-100 flex items-center justify-center"
                   onClick={(e) => handleDelete(e, item)}
-                  title={`Remove ${item.name}`}
+                  title={`Remove ${item.name} from watchlist`}
                   aria-label={`Remove ${item.name}`}
                 >
-                  <Trash2 size={13} />
-                </button>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </NavLink>
             ))
           )}
         </div>
-      </div>
+      </ScrollArea>
+    </div>
+  );
+}
 
-      <div className="sidebar-footer">
-        {showAddForm ? (
-          <AddCompanyForm
-            onAdd={onAddCompany}
-            onCancel={() => setShowAddForm(false)}
-          />
-        ) : (
-          <button
-            type="button"
-            className="add-company-toggle-btn"
-            onClick={() => setShowAddForm(true)}
-          >
-            <Plus size={15} />
-            <span>Add Company / Topic</span>
-          </button>
-        )}
-      </div>
+/**
+ * WatchlistSidebar: Desktop permanent left sidebar.
+ */
+export default function WatchlistSidebar({ watchlist = [], onDeleteCompany }) {
+  return (
+    <aside className="hidden lg:flex w-72 xl:w-80 border-r border-border bg-white flex-col h-[calc(100vh-57px)] sticky top-[57px] shrink-0 z-20">
+      <WatchlistContent
+        watchlist={watchlist}
+        onDeleteCompany={onDeleteCompany}
+      />
     </aside>
   );
 }

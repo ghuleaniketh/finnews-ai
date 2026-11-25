@@ -1,9 +1,10 @@
 import React from 'react';
 import { Brain, Cpu } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 /**
- * MemoryPanel: displays the contextual memory nodes recalled and applied
- * during this intelligence synthesis (the system's evolving memory).
+ * MemoryPanel: contextual memory nodes recalled and applied during synthesis.
  */
 export default function MemoryPanel({ memoryItems = [] }) {
   if (!memoryItems || memoryItems.length === 0) {
@@ -11,32 +12,38 @@ export default function MemoryPanel({ memoryItems = [] }) {
   }
 
   return (
-    <div className="glass-card section-container memory-panel-card">
-      <div className="section-header">
-        <div className="section-title" style={{ color: '#c084fc' }}>
-          <Brain size={18} style={{ color: '#c084fc' }} />
-          <span>Memory Recalled & Applied</span>
-        </div>
-        <span className="memory-badge">
-          <Cpu size={12} />
-          <span>Context Graph</span>
-        </span>
-      </div>
-
-      <p style={{ fontSize: '0.82rem', color: '#94a3b8', marginBottom: '8px' }}>
-        The synthesis engine integrated the following historical findings and analyst notes:
-      </p>
-
-      <div className="memory-items-list">
-        {memoryItems.map((item, idx) => (
-          <div key={idx} className="memory-item">
-            <div className="memory-item-icon">
-              <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: '#c084fc' }} />
-            </div>
-            <span>{item}</span>
+    <Card className="bg-white border border-border shadow-xs">
+      <CardHeader className="p-4 sm:p-5 pb-2">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Brain className="h-4 w-4 text-blue-700" />
+            <CardTitle className="text-sm font-semibold text-slate-900 tracking-tight">
+              Memory Recalled & Applied
+            </CardTitle>
           </div>
-        ))}
-      </div>
-    </div>
+          <Badge variant="outline" className="text-[11px] font-mono text-slate-600 bg-slate-50 border-slate-200">
+            <Cpu className="h-3 w-3 mr-1 text-slate-500" />
+            Context Graph
+          </Badge>
+        </div>
+        <p className="text-xs text-slate-500 pt-1">
+          Historical analyst findings and prior news syntheses integrated into this run:
+        </p>
+      </CardHeader>
+
+      <CardContent className="p-4 sm:p-5 pt-2">
+        <div className="space-y-2">
+          {memoryItems.map((item, idx) => (
+            <div
+              key={idx}
+              className="flex items-start gap-2.5 p-2.5 rounded-md bg-slate-50 border border-slate-200 text-xs text-slate-700 leading-relaxed"
+            >
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-700 mt-1.5 shrink-0" />
+              <span>{item}</span>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }

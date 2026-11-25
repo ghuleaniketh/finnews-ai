@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import {
   ArrowLeft,
-  Building2,
-  Clock,
+  Loader2,
   Sparkles,
-  Info,
 } from 'lucide-react';
 import AnalyzeButton from '../components/AnalyzeButton';
-import SummaryCard from '../components/SummaryCard';
+import SummaryCard, { RiskBadge } from '../components/SummaryCard';
+import SentimentBadge from '../components/SentimentBadge';
 import WhatChanged from '../components/WhatChanged';
 import KeyEvents from '../components/KeyEvents';
 import ThemesList from '../components/ThemesList';
@@ -25,6 +24,9 @@ import {
   getMemory,
   triggerAnalysis,
 } from '../api/endpoints';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Alert } from '@/components/ui/alert';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 
 const ANALYSIS_STAGES = [
   'Searching news…',
@@ -35,8 +37,17 @@ const ANALYSIS_STAGES = [
 
 /**
  * CompanyDetail: Deep-dive view for a specific company or topic.
- * Features evolving memory diff, historical timeline, sentiment chart,
- * notes panel, key events, and primary sources.
+ * Features:
+ * - Header with company name, ticker, sentiment Badge, risk Badge, and Analyze button.
+ * - Slim alert for rotating staged progress during analysis.
+ * - Tabs for Analysis | History | Notes so the page isn't one long scroll on mobile.
+ * - Content organized with Cards in exact order:
+ *   1) Summary
+ *   2) What changed (subtle left border, not a glow)
+ *   3) Key events (ExternalLink icon)
+ *   4) Recurring themes
+ *   5) Memory used
+ *   6) Sources
  */
 export default function CompanyDetail({ watchlist = [] }) {
   const { id } = useParams();
@@ -104,7 +115,7 @@ export default function CompanyDetail({ watchlist = [] }) {
     }
   }, [id]);
 
-  // Trigger automated analysis run
+  // Trigger automated analysis run (preserves 180000ms logic)
   const handleAnalyze = async () => {
     if (analyzing || !id) return;
 
@@ -142,45 +153,53 @@ export default function CompanyDetail({ watchlist = [] }) {
   };
 
   if (loading) {
-    return <Loader message={`Synthesizing intelligence dossier for ${company?.name || 'entity'}...`} />;
+    return (
+      <div className="py-12 bg-white rounded-lg border border-border">
+        <Loader message={`Synthesizing intelligence dossier for ${company?.name || 'entity'}...`} />
+      </div>
+    );
   }
 
   return (
-    <div>
+    <div className="space-y-6 max-w-5xl mx-auto">
       <ErrorBanner error={error} onDismiss={() => setError(null)} />
 
-      {/* Top Breadcrumb and Header */}
-      <div style={{ marginBottom: '14px' }}>
+      {/* Top Breadcrumb Navigation */}
+      <div>
         <Link
           to="/"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '6px',
-            fontSize: '0.8rem',
-            color: 'var(--text-muted)',
-            transition: 'color 0.2s',
-          }}
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-800 transition-colors min-h-[40px] py-1"
         >
-          <ArrowLeft size={14} />
+          <ArrowLeft className="h-3.5 w-3.5" />
           <span>Back to Dashboard</span>
         </Link>
       </div>
 
-      <div className="page-header">
-        <div className="page-title-group">
-          <h1>
-            <span>{company?.name}</span>
+      {/* Header: Company Name, Ticker, Sentiment Badge, Risk Badge, and Analyze Button */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border">
+        <div className="space-y-2">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+              {company?.name}
+            </h1>
             {company?.ticker && (
-              <span className="company-ticker-badge">{company.ticker}</span>
+              <span className="font-mono text-xs uppercase bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                {company.ticker}
+              </span>
             )}
-          </h1>
-          <p>
-            Continuous intelligence feed correlated with retained financial memory
+            {selectedAnalysis && (
+              <>
+                <SentimentBadge sentiment={selectedAnalysis.sentiment} />
+                <RiskBadge riskLevel={selectedAnalysis.risk_level} />
+              </>
+            )}
+          </div>
+          <p className="text-xs sm:text-sm text-slate-500">
+            Continuous intelligence feed correlated with retained institutional memory.
           </p>
         </div>
 
-        <div className="header-actions">
+        <div className="shrink-0 flex items-center">
           <AnalyzeButton
             onAnalyze={handleAnalyze}
             loading={analyzing}
@@ -190,86 +209,117 @@ export default function CompanyDetail({ watchlist = [] }) {
         </div>
       </div>
 
-      {/* Analyzing Progress Notice Banner */}
+      {/* Staged Progress Slim Alert Area under Header */}
       {analyzing && (
-        <div className="analyzing-notice-bar">
-          <div className="analyzing-notice-text">
-            <div className="pulse-spinner" />
-            <div>
-              <strong>Deep Scrape & Memory Correlation:</strong>{' '}
-              <span className="analyzing-stage-pill">{currentStageText}</span>
+        <Alert className="bg-blue-50 border-blue-200 text-blue-900 p-3.5 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+            <Loader2 className="h-4 w-4 animate-spin text-blue-700 shrink-0" />
+            <div className="text-xs truncate">
+              <span className="font-semibold text-blue-950">Deep Scrape & Memory Synthesis:</span>{' '}
+              <span className="font-mono font-medium text-blue-700 bg-blue-100/90 px-2 py-0.5 rounded border border-blue-200 ml-1">
+                {currentStageText}
+              </span>
             </div>
           </div>
-          <div className="analyzing-stages-stepper">
+          <div className="hidden sm:flex items-center gap-1 text-[11px]">
             {ANALYSIS_STAGES.map((stage, idx) => (
               <span
                 key={stage}
-                className={`stage-step-tag ${idx === stageIndex ? 'active' : ''}`}
+                className={`px-2 py-0.5 rounded font-mono transition-colors ${
+                  idx === stageIndex
+                    ? 'bg-blue-700 text-white font-semibold shadow-2xs'
+                    : 'text-slate-400'
+                }`}
               >
                 {stage}
               </span>
             ))}
           </div>
-        </div>
+        </Alert>
       )}
 
+      {/* Main View Area: Empty state or Tabs */}
       {analyses.length === 0 ? (
-        <div className="empty-state-card">
-          <div className="empty-state-icon">
-            <Sparkles size={28} />
-          </div>
-          <h3 className="empty-state-title">No Intelligence Generated Yet</h3>
-          <p className="empty-state-desc">
-            Click <strong>"Analyze now"</strong> above to trigger the autonomous news scraper. It will
-            extract key events, compute sentiment, identify recurring themes, and build the initial
-            memory graph for {company?.name}.
-          </p>
-          <AnalyzeButton
-            onAnalyze={handleAnalyze}
-            loading={analyzing}
-            loadingText={currentStageText}
-            label="Run First Analysis"
-          />
-        </div>
+        <Card className="max-w-md mx-auto text-center p-8 bg-white border border-border shadow-xs">
+          <CardHeader className="p-0 pb-4 flex flex-col items-center">
+            <div className="h-12 w-12 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-700 mb-3">
+              <Sparkles className="h-6 w-6" />
+            </div>
+            <CardTitle className="text-lg font-semibold text-slate-900">
+              No Intelligence Generated Yet
+            </CardTitle>
+            <CardDescription className="text-xs text-slate-500 max-w-xs mt-1">
+              Click "Analyze now" above to trigger autonomous news scraping. It will extract key events,
+              compute sentiment, identify recurring themes, and build initial memory for {company?.name}.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="p-0 pt-2">
+            <AnalyzeButton
+              onAnalyze={handleAnalyze}
+              loading={analyzing}
+              loadingText={currentStageText}
+              label="Run First Analysis"
+            />
+          </CardContent>
+        </Card>
       ) : (
-        <>
-          {/* Active / Inspected Analysis Summary */}
-          {selectedAnalysis && (
-            <>
-              {/* Highlight "What Changed Since Last Time" */}
-              <WhatChanged
-                whatChanged={selectedAnalysis.what_changed}
-                previousDate={selectedAnalysis.created_at}
-              />
+        /* Tabs for Analysis | History | Notes so the page isn't one long scroll on mobile */
+        <Tabs defaultValue="analysis" className="w-full space-y-4">
+          <TabsList className="grid grid-cols-3 w-full max-w-md h-10 p-1 bg-slate-100 border border-slate-200">
+            <TabsTrigger
+              value="analysis"
+              className="text-xs sm:text-sm font-medium h-8 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-xs"
+            >
+              Analysis
+            </TabsTrigger>
+            <TabsTrigger
+              value="history"
+              className="text-xs sm:text-sm font-medium h-8 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-xs"
+            >
+              History ({analyses.length})
+            </TabsTrigger>
+            <TabsTrigger
+              value="notes"
+              className="text-xs sm:text-sm font-medium h-8 data-[state=active]:bg-white data-[state=active]:text-slate-900 data-[state=active]:shadow-xs"
+            >
+              Notes ({notes.length})
+            </TabsTrigger>
+          </TabsList>
 
-              {/* Main Headline & Metadata */}
-              <SummaryCard
-                headline={selectedAnalysis.headline}
-                summary={selectedAnalysis.summary}
-                sentiment={selectedAnalysis.sentiment}
-                riskLevel={selectedAnalysis.risk_level}
-                entities={selectedAnalysis.entities}
-                createdAt={selectedAnalysis.created_at}
-              />
-            </>
-          )}
+          {/* Analysis Tab: Exact requested card order:
+              1) Summary
+              2) What changed (subtle left border, not a glow)
+              3) Key events (ExternalLink icon)
+              4) Recurring themes
+              5) Memory used
+              6) Sources
+          */}
+          <TabsContent value="analysis" className="space-y-4 pt-1">
+            {selectedAnalysis && (
+              <>
+                {/* 1) Summary */}
+                <SummaryCard
+                  headline={selectedAnalysis.headline}
+                  summary={selectedAnalysis.summary}
+                  sentiment={selectedAnalysis.sentiment}
+                  riskLevel={selectedAnalysis.risk_level}
+                  entities={selectedAnalysis.entities}
+                  createdAt={selectedAnalysis.created_at}
+                />
 
-          {/* 2-Column Responsive Detail Layout */}
-          <div className="detail-grid-layout">
-            {/* Main Primary Content Column */}
-            <div className="detail-main-col">
-              {/* Key Events detected in the scrape */}
-              {selectedAnalysis && (
+                {/* 2) What changed (highlighted with a subtle left border, not a glow) */}
+                <WhatChanged
+                  whatChanged={selectedAnalysis.what_changed}
+                  previousDate={selectedAnalysis.created_at}
+                />
+
+                {/* 3) Key events (source links with ExternalLink icon) */}
                 <KeyEvents events={selectedAnalysis.key_events} />
-              )}
 
-              {/* Recurring Strategic Themes */}
-              {selectedAnalysis && (
+                {/* 4) Recurring themes */}
                 <ThemesList themes={selectedAnalysis.recurring_themes} />
-              )}
 
-              {/* Memory Used Panel (What was recalled from prior runs / notes) */}
-              {selectedAnalysis && (
+                {/* 5) Memory used */}
                 <MemoryPanel
                   memoryItems={
                     selectedAnalysis.memory_used && selectedAnalysis.memory_used.length > 0
@@ -277,31 +327,30 @@ export default function CompanyDetail({ watchlist = [] }) {
                       : memoryItems
                   }
                 />
-              )}
 
-              {/* Scraped Sources List */}
-              {selectedAnalysis && (
+                {/* 6) Sources */}
                 <SourcesList sources={selectedAnalysis.sources} />
-              )}
-            </div>
+              </>
+            )}
+          </TabsContent>
 
-            {/* Side Column: History Timeline + Sentiment Chart + Analyst Notes */}
-            <div className="detail-side-col">
-              {/* Interactive Timeline with Recharts sentiment trend */}
-              <HistoryTimeline
-                analyses={analyses}
-                selectedId={selectedAnalysis?.id}
-                onSelectAnalysis={(item) => setSelectedAnalysis(item)}
-              />
+          {/* History Tab: timeline list plus sentiment-over-time chart */}
+          <TabsContent value="history" className="pt-1">
+            <HistoryTimeline
+              analyses={analyses}
+              selectedId={selectedAnalysis?.id}
+              onSelectAnalysis={(item) => setSelectedAnalysis(item)}
+            />
+          </TabsContent>
 
-              {/* Analyst Notes Panel */}
-              <NotesPanel
-                notes={notes}
-                onAddNote={handleAddNote}
-              />
-            </div>
-          </div>
-        </>
+          {/* Notes Tab: Textarea + Add note button + notes list */}
+          <TabsContent value="notes" className="pt-1">
+            <NotesPanel
+              notes={notes}
+              onAddNote={handleAddNote}
+            />
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );

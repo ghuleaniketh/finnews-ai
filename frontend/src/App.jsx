@@ -45,7 +45,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <Loader message="Initializing FinNews AI Engine..." />
       </div>
     );

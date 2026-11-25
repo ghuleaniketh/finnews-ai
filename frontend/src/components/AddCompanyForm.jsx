@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
-import { PlusCircle, X, Check } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { AlertCircle, Loader2, Plus } from 'lucide-react';
 
 /**
- * AddCompanyForm: form to add a company/topic to watchlist with name and optional ticker
+ * AddCompanyForm: Form to add a company/topic to watchlist with name and optional ticker.
+ * Styled with shadcn/ui components for light minimal formal theme.
  */
-export default function AddCompanyForm({ onAdd, onCancel }) {
+export default function AddCompanyForm({ onAdd, onSuccess, onCancel }) {
   const [name, setName] = useState('');
   const [ticker, setTicker] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -13,7 +17,7 @@ export default function AddCompanyForm({ onAdd, onCancel }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) {
-      setError('Company name is required');
+      setError('Company or topic name is required.');
       return;
     }
 
@@ -23,89 +27,91 @@ export default function AddCompanyForm({ onAdd, onCancel }) {
       await onAdd({ name: name.trim(), ticker: ticker.trim() });
       setName('');
       setTicker('');
-      if (onCancel) onCancel();
+      if (onSuccess) {
+        onSuccess();
+      } else if (onCancel) {
+        onCancel();
+      }
     } catch (err) {
-      setError(err.message || 'Failed to add to watchlist');
+      setError(err.message || 'Failed to add entity to watchlist.');
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="add-company-container">
-      <form onSubmit={handleSubmit} className="add-company-form">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
-          <span style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-primary)' }}>
-            Add to Watchlist
-          </span>
-          {onCancel && (
-            <button
-              type="button"
-              onClick={onCancel}
-              style={{ color: 'var(--text-muted)', padding: '2px' }}
-              aria-label="Close"
-            >
-              <X size={14} />
-            </button>
-          )}
+    <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+      {error && (
+        <div className="flex items-center gap-2 p-3 text-xs text-rose-700 bg-rose-50 border border-rose-200 rounded-md">
+          <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
+          <span>{error}</span>
         </div>
+      )}
 
-        {error && (
-          <div style={{ color: 'var(--sentiment-neg-text)', fontSize: '0.74rem' }}>
-            {error}
-          </div>
-        )}
+      <div className="space-y-1.5">
+        <Label htmlFor="company-name" className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+          Company or Topic <span className="text-rose-500">*</span>
+        </Label>
+        <Input
+          id="company-name"
+          type="text"
+          placeholder="e.g. Apple, HDFC Bank, Quantum Computing"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (error) setError(null);
+          }}
+          disabled={submitting}
+          autoFocus
+          className="h-10 text-sm bg-white"
+        />
+      </div>
 
-        <div className="form-group">
-          <label className="form-label" htmlFor="company-name">Company / Topic *</label>
-          <input
-            id="company-name"
-            className="form-input"
-            type="text"
-            placeholder="e.g. HDFC Bank, Tesla, AI Chips"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+      <div className="space-y-1.5">
+        <Label htmlFor="company-ticker" className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+          Ticker / Symbol <span className="text-slate-400 font-normal lowercase">(optional)</span>
+        </Label>
+        <Input
+          id="company-ticker"
+          type="text"
+          placeholder="e.g. AAPL, HDFCBANK.NS"
+          value={ticker}
+          onChange={(e) => setTicker(e.target.value)}
+          disabled={submitting}
+          className="h-10 text-sm font-mono uppercase placeholder:normal-case placeholder:font-sans bg-white"
+        />
+      </div>
+
+      <div className="flex items-center justify-end gap-2 pt-2">
+        {onCancel && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
             disabled={submitting}
-            autoFocus
-          />
-        </div>
-
-        <div className="form-group">
-          <label className="form-label" htmlFor="company-ticker">Ticker / Symbol (optional)</label>
-          <input
-            id="company-ticker"
-            className="form-input"
-            type="text"
-            placeholder="e.g. HDFCBANK.NS, TSLA"
-            value={ticker}
-            onChange={(e) => setTicker(e.target.value)}
-            disabled={submitting}
-          />
-        </div>
-
-        <div className="form-actions-row">
-          <button
-            type="submit"
-            className="btn-primary"
-            style={{ flex: 1, padding: '7px 12px', fontSize: '0.8rem' }}
-            disabled={!name.trim() || submitting}
+            className="h-10 min-w-[80px]"
           >
-            <Check size={13} />
-            <span>{submitting ? 'Adding...' : 'Add Watchlist'}</span>
-          </button>
-          {onCancel && (
-            <button
-              type="button"
-              className="btn-secondary"
-              style={{ padding: '7px 10px', fontSize: '0.8rem' }}
-              onClick={onCancel}
-              disabled={submitting}
-            >
-              Cancel
-            </button>
+            Cancel
+          </Button>
+        )}
+        <Button
+          type="submit"
+          disabled={!name.trim() || submitting}
+          className="h-10 min-w-[120px] bg-blue-700 hover:bg-blue-800 text-white font-medium"
+        >
+          {submitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <span>Adding...</span>
+            </>
+          ) : (
+            <>
+              <Plus className="mr-1.5 h-4 w-4" />
+              <span>Add to Watchlist</span>
+            </>
           )}
-        </div>
-      </form>
-    </div>
+        </Button>
+      </div>
+    </form>
   );
 }

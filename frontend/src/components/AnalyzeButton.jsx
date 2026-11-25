@@ -1,10 +1,10 @@
 import React from 'react';
-import { Zap } from 'lucide-react';
+import { Zap, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 /**
  * AnalyzeButton: triggers automated scrape & synthesis run.
- * Disabled while running (which can take 20-90s on backend).
- * Accepts dynamic loadingText to display staged progress ("Searching news…", etc.)
+ * Disabled while running (staged progress displayed via loadingText).
  */
 export default function AnalyzeButton({
   onAnalyze,
@@ -13,24 +13,24 @@ export default function AnalyzeButton({
   loadingText,
 }) {
   return (
-    <button
+    <Button
       type="button"
-      className="analyze-btn"
       onClick={onAnalyze}
       disabled={loading}
       aria-busy={loading}
+      className="min-h-[40px] px-4 bg-blue-700 hover:bg-blue-800 text-white font-medium shadow-xs transition-colors"
     >
       {loading ? (
         <>
-          <div className="pulse-spinner" />
-          <span>{loadingText || 'Synthesizing Intelligence...'}</span>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin shrink-0" />
+          <span>{loadingText || 'Synthesizing...'}</span>
         </>
       ) : (
         <>
-          <Zap size={16} />
+          <Zap className="mr-1.5 h-4 w-4 shrink-0" />
           <span>{label}</span>
         </>
       )}
-    </button>
+    </Button>
   );
 }

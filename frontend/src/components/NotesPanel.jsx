@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
-import { StickyNote, Send, Sparkles } from 'lucide-react';
+import { StickyNote, Send, Loader2 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 
 /**
- * NotesPanel: allows financial analysts to jot down observations,
+ * NotesPanel: allows financial analysts to add observations,
  * which are fed directly into the system's evolving memory context.
  */
-export default function NotesPanel({ notes = [], onAddNote, loading = false }) {
+export default function NotesPanel({ notes = [], onAddNote }) {
   const [content, setContent] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -20,7 +23,7 @@ export default function NotesPanel({ notes = [], onAddNote, loading = false }) {
       await onAddNote(content.trim());
       setContent('');
     } catch (err) {
-      setError(err.message || 'Failed to record note');
+      setError(err.message || 'Failed to record analyst note.');
     } finally {
       setSubmitting(false);
     }
@@ -33,75 +36,99 @@ export default function NotesPanel({ notes = [], onAddNote, loading = false }) {
   };
 
   return (
-    <div className="glass-card notes-card">
-      <div className="section-header">
-        <div className="section-title">
-          <StickyNote size={18} className="section-title-icon" />
-          <span>Analyst Notes ({notes.length})</span>
+    <Card className="bg-white border border-border shadow-xs space-y-4">
+      <CardHeader className="p-4 sm:p-5 pb-0">
+        <div className="flex items-center gap-2">
+          <StickyNote className="h-4 w-4 text-blue-700" />
+          <CardTitle className="text-sm font-semibold text-slate-900 tracking-tight">
+            Analyst Notes {notes.length > 0 && `(${notes.length})`}
+          </CardTitle>
         </div>
-      </div>
+        <p className="text-xs text-slate-500 pt-1">
+          Analyst observations directly augment the institutional memory graph and steer future news intelligence runs.
+        </p>
+      </CardHeader>
 
-      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '14px' }}>
-        Notes directly augment the system's memory and steer future news intelligence runs.
-      </p>
+      <CardContent className="p-4 sm:p-5 pt-0 space-y-4">
+        {/* Note Input Box */}
+        <form onSubmit={handleSubmit} className="space-y-2">
+          <Textarea
+            className="min-h-[90px] text-xs bg-slate-50/50 border-slate-200 focus-visible:bg-white resize-y"
+            placeholder="Add analyst context, hypotheses, or key management targets to watch (Cmd/Ctrl + Enter to save)..."
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            onKeyDown={handleKeyDown}
+            disabled={submitting}
+          />
 
-      <form onSubmit={handleSubmit} className="notes-input-box">
-        <textarea
-          className="notes-textarea"
-          placeholder="Add analyst context, hypotheses, or key management targets to watch (Cmd/Ctrl + Enter to save)..."
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          onKeyDown={handleKeyDown}
-          disabled={submitting}
-        />
-        {error && (
-          <div style={{ color: 'var(--sentiment-neg-text)', fontSize: '0.78rem' }}>
-            {error}
+          {error && (
+            <p className="text-xs text-rose-600 font-medium">
+              {error}
+            </p>
+          )}
+
+          <div className="flex items-center justify-between pt-1">
+            <span className="text-[11px] text-slate-400">
+              Saved notes become part of memory
+            </span>
+            <Button
+              type="submit"
+              disabled={!content.trim() || submitting}
+              className="h-10 min-h-[40px] px-4 bg-blue-700 hover:bg-blue-800 text-white font-medium shadow-xs"
+            >
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  <span>Saving...</span>
+                </>
+              ) : (
+                <>
+                  <Send className="mr-1.5 h-3.5 w-3.5" />
+                  <span>Add note</span>
+                </>
+              )}
+            </Button>
           </div>
-        )}
-        <div className="notes-input-footer">
-          <span className="notes-hint">Saved notes become part of memory</span>
-          <button
-            type="submit"
-            className="btn-primary"
-            style={{ padding: '6px 14px', fontSize: '0.8rem' }}
-            disabled={!content.trim() || submitting}
-          >
-            <Send size={13} />
-            <span>{submitting ? 'Saving...' : 'Add Note'}</span>
-          </button>
-        </div>
-      </form>
+        </form>
 
-      <div className="notes-list">
-        {notes.length === 0 ? (
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', textAlign: 'center', padding: '16px' }}>
-            No analyst notes yet. Add one above to seed the memory graph!
-          </p>
-        ) : (
-          notes.map((item) => {
-            const dateStr = item.created_at
-              ? new Date(item.created_at).toLocaleDateString(undefined, {
-                  month: 'short',
-                  day: 'numeric',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })
-              : 'Recent';
+        {/* Notes List */}
+        <div className="pt-2 border-t border-border/60 space-y-2.5">
+          {notes.length === 0 ? (
+            <p className="text-xs text-slate-400 italic text-center py-4">
+              No analyst notes recorded yet. Add one above to seed the memory graph.
+            </p>
+          ) : (
+            notes.map((item) => {
+              const dateStr = item.created_at
+                ? new Date(item.created_at).toLocaleDateString(undefined, {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })
+                : 'Recent';
 
-            return (
-              <div key={item.id} className="note-bubble">
-                <div className="note-bubble-header">
-                  <span className="note-author">Analyst Memory Node</span>
-                  <span className="note-date">{dateStr}</span>
+              return (
+                <div
+                  key={item.id}
+                  className="p-3 rounded-md bg-slate-50 border border-slate-200 space-y-1.5 text-xs"
+                >
+                  <div className="flex items-center justify-between text-[11px] text-slate-500">
+                    <span className="font-semibold text-blue-800 uppercase tracking-wider">
+                      Analyst Memory Node
+                    </span>
+                    <span className="font-mono">{dateStr}</span>
+                  </div>
+                  <p className="text-slate-700 leading-relaxed whitespace-pre-wrap">
+                    {item.note}
+                  </p>
                 </div>
-                <p className="note-body">{item.note}</p>
-              </div>
-            );
-          })
-        )}
-      </div>
-    </div>
+              );
+            })
+          )}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
